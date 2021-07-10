@@ -15,10 +15,6 @@ const UserSchema = new mongoose.Schema({
       ref: "Event",
     },
   ],
-  creator: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "Event",
-  },
 });
 
 module.exports = mongoose.model("User", UserSchema);
