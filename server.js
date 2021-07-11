@@ -7,11 +7,14 @@ const schema = require("./graphql/schema/index");
 const rootValue = require("./graphql/resolvers/index");
 
 const connectDB = require("./config/db");
+const auth = require("./middleware/auth");
 
 //Load environment Variables and also specify that path to the config file
 dotenv.config({ path: "./config/config.env" });
 
 connectDB();
+
+app.use(auth);
 
 app.use(express.json());
 
