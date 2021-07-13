@@ -1,7 +1,10 @@
 import "./Auth.css";
-import { useState, useRef } from "react";
+import { useState, useRef, useContext } from "react";
+import AuthContext from "../context/authContext";
 
 const AuthPage = (props) => {
+  const authContext = useContext(AuthContext);
+
   const [isLogin, setLogin] = useState(true);
 
   const emailEl = useRef();
@@ -54,7 +57,7 @@ const AuthPage = (props) => {
       },
     })
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Failed!");
         }
@@ -62,6 +65,13 @@ const AuthPage = (props) => {
       })
       .then((resData) => {
         console.log(resData);
+        if (resData.data.login.token) {
+          authContext.login(
+            resData.data.login.token,
+            resData.data.login.userId,
+            resData.data.login.tokenExpiration
+          );
+        }
       })
       .catch((err) => {
         console.log(err);
