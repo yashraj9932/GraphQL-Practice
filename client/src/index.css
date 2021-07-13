@@ -1,10 +1,12 @@
 body {
   margin: 0;
-  font-family: roboto, arial, helvetica;
+  padding: 0;
+  font-family: sans-serif;
 }
 
 .form-control label,
-.form-control input {
+.form-control input,
+.form-control textarea {
   width: 100%;
   display: block;
 }
@@ -19,9 +21,9 @@ body {
 
 .form-actions button,
 .btn {
-  background: #01d1d1;
+  background: #5101d1;
   font: inherit;
-  border: 1px solid #01d1d1;
+  border: 1px solid #5101d1;
   border-radius: 3px;
   padding: 0.25rem 1rem;
   margin-right: 1rem;
@@ -34,6 +36,34 @@ body {
 .form-actions button:active,
 .btn:hover,
 .btn:active {
-  background: #01a7a7;
-  border-color: #01a7a7;
+  background: #6219d6;
+  border-color: #6219d6;
+}
+
+.lds-ellipsis {
+  display: inline-block;
+  position: relative;
+  width: 80px;
+  height: 80px;
+}
+.lds-ellipsis div {
+  position: absolute;
+  top: 33px;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: #6219d6;
+  animation-timing-function: cubic-bezier(0, 1, 1, 0);
+}
+.lds-ellipsis div:nth-child(1) {
+  left: 8px;
+  animation: lds-ellipsis1 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(2) {
+  left: 8px;
+  animation: lds-ellipsis2 0.6s infinite;
+}
+.lds-ellipsis div:nth-child(3) {
+  left: 32px;
+  animation: lds-ellipsis2 0.6s infinite;
 }
