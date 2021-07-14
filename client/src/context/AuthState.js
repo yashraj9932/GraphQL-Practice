@@ -23,7 +23,7 @@ const AuthState = (props) => {
   //     });
   //   };
   const login = (token, userId, tokenExpiration) => {
-    console.log(token, userId);
+    // console.log(token, userId);
     dispatch({
       type: LOGIN,
       payload: {

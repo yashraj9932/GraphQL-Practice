@@ -18,14 +18,8 @@ const EventsPage = () => {
 
   const modalCancelHandler = () => {
     setCreating(false);
+    setSelected(null);
   };
-  // const eventList = events.map((event) => {
-  //   return (
-  //     <li key={event._id} className="events__list-item">
-  //       {event.title}
-  //     </li>
-  //   );
-  // });
 
   const titleElRef = useRef();
   const priceElRef = useRef();
@@ -57,8 +51,8 @@ const EventsPage = () => {
 
     const requestBody = {
       query: `
-          mutation {
-            createEvent(eventInput: {title: "${title}", description: "${description}", price: ${price}, date: "${date}"}) {
+          mutation CreateEvent($title:String!, $description:String!, $price:Float!, $date:String! ) {
+            createEvent(eventInput: {title: $title, description: $description, price: $price, date: $date}) {
               _id
               title
               description
@@ -71,6 +65,12 @@ const EventsPage = () => {
             }
           }
         `,
+      variables: {
+        title,
+        description,
+        price,
+        date,
+      },
     };
 
     const token = authContext.token;
@@ -90,7 +90,6 @@ const EventsPage = () => {
         return res.json();
       })
       .then((resData) => {
-        // console.log(resData.data);
         const updatedEvents = [...events];
         updatedEvents.push({
           _id: resData.data.createEvent._id,
@@ -156,14 +155,55 @@ const EventsPage = () => {
   };
 
   const showDetailHandler = (eventId) => {
-    setSelected(() => {
-      const selectedEvent = events.find((e) => e._id === eventId);
-      return { selectedEvent: selectedEvent };
-    });
+    const selectedEvent = events.find((e) => e._id === eventId);
+    setSelected(selectedEvent);
+  };
+
+  const bookEventHandler = () => {
+    if (!authContext.token) {
+      setSelected(null);
+      return;
+    }
+    const requestBody = {
+      query: `
+          mutation BookEvent($id: ID!) {
+            bookEvent(eventId:$id) {
+              _id
+              createdAt
+              updatedAt
+            }
+          }
+        `,
+      variables: {
+        id: selected._id,
+      },
+    };
+
+    fetch("http://localhost:5000/graphql", {
+      method: "POST",
+      body: JSON.stringify(requestBody),
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + authContext.token,
+      },
+    })
+      .then((res) => {
+        if (res.status !== 200 && res.status !== 201) {
+          throw new Error("Failed!");
+        }
+        return res.json();
+      })
+      .then((resData) => {
+        setSelected(null);
+      })
+      .catch((err) => {
+        console.log(err);
+        throw err;
+      });
   };
   return (
     <React.Fragment>
-      {creating && <Backdrop />}
+      {(creating || selected) && <Backdrop />}
       {creating && (
         <Modal
           title="Add Event"
@@ -171,6 +211,7 @@ const EventsPage = () => {
           canConfirm
           onCancel={modalCancelHandler}
           onConfirm={modalConfirmHandler}
+          text="Confirm"
         >
           <form>
             <div className="form-control">
@@ -192,6 +233,22 @@ const EventsPage = () => {
           </form>
         </Modal>
       )}
+      {selected && (
+        <Modal
+          title={selected.title}
+          canCancel
+          canConfirm
+          onCancel={modalCancelHandler}
+          onConfirm={bookEventHandler}
+          text={authContext.token ? "Book" : "Confirm"}
+        >
+          <h1>{selected.title}</h1>
+          <h2>
+            ${selected.price}-{new Date(selected.date).toLocaleDateString()}
+          </h2>
+          <p>{selected.description}</p>
+        </Modal>
+      )}
       {authContext.token && (
         <div className="events-control">
           <p>Share your own Events!</p>
@@ -200,7 +257,6 @@ const EventsPage = () => {
           </button>
         </div>
       )}
-      {/* <ul className="events__list">{eventList}</ul> */}
       {loading ? (
         <div
           style={{

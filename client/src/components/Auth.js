@@ -18,7 +18,6 @@ const AuthPage = (props) => {
     event.preventDefault();
     const email = emailEl.current.value;
     const password = passwordEl.current.value;
-    // console.log(email, password);
 
     if (email.trim().length === 0 || password.trim().length === 0) {
       return;
@@ -26,26 +25,34 @@ const AuthPage = (props) => {
 
     let requestBody = {
       query: `
-        query {
-          login(email: "${email}", password: "${password}") {
+        query Login($email: String!, $password: String!) {
+          login(email: $email, password: $password) {
             userId
             token
             tokenExpiration
           }
         }
       `,
+      variables: {
+        email,
+        password,
+      },
     };
 
     if (!isLogin) {
       requestBody = {
         query: `
-          mutation {
-            createUser(userInput: {email: "${email}", password: "${password}"}) {
+          mutation CreateUser($email: String!, $password: String!) {
+            createUser(userInput: {email: $email, password: $password}) {
               _id
               email
             }
           }
         `,
+        variables: {
+          email,
+          password,
+        },
       };
     }
 
@@ -57,14 +64,12 @@ const AuthPage = (props) => {
       },
     })
       .then((res) => {
-        // console.log(res);
         if (res.status !== 200 && res.status !== 201) {
           throw new Error("Failed!");
         }
         return res.json();
       })
       .then((resData) => {
-        // console.log(resData);
         if (resData.data.login.token) {
           authContext.login(
             resData.data.login.token,
@@ -86,7 +91,12 @@ const AuthPage = (props) => {
       </div>
       <div className="form-control">
         <label htmlFor="password">Password</label>
-        <input type="password" id="password" ref={passwordEl} />
+        <input
+          type="password"
+          id="password"
+          ref={passwordEl}
+          autoComplete="on"
+        />
       </div>
       <div className="form-actions">
         <button type="submit">Submit</button>
