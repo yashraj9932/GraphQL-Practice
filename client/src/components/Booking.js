@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 
 import AuthContext from "../context/authContext";
-import BookingsChart from "./Bookings/BookingsChart";
+// import BookingsChart from "./Bookings/BookingsChart";
 import BookingList from "../components/Bookings/BookingList";
 
 const BookingsPage = () => {
@@ -152,7 +152,9 @@ const BookingsPage = () => {
           {lct === "list" ? (
             <BookingList bookings={bookings} onDelete={deleteBookingHandler} />
           ) : (
-            <BookingsChart bookings={bookings} />
+            {
+              /* <BookingsChart bookings={bookings} /> */
+            }
           )}
         </>
       )}

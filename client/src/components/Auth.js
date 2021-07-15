@@ -1,6 +1,7 @@
 import "./Auth.css";
 import { useState, useRef, useContext } from "react";
 import AuthContext from "../context/authContext";
+import { gql, useLazyQuery } from "@apollo/client";
 
 const AuthPage = (props) => {
   const authContext = useContext(AuthContext);
@@ -14,6 +15,35 @@ const AuthPage = (props) => {
     setLogin(!isLogin);
   };
 
+  const LOGIN = gql`
+    query Login($email: String!, $password: String!) {
+      login(email: $email, password: $password) {
+        userId
+        token
+        tokenExpiration
+      }
+    }
+  `;
+
+  const SIGNUP = gql`
+    mutation CreateUser($email: String!, $password: String!) {
+      createUser(userInput: { email: $email, password: $password }) {
+        _id
+        email
+      }
+    }
+  `;
+
+  // const [getUser, { loading, data }] = useLazyQuery(LOGIN);
+  const [getUser, obj] = useLazyQuery(LOGIN, {
+    fetchPolicy: "network-only",
+  });
+  const [signUser, objj] = useLazyQuery(SIGNUP, {
+    fetchPolicy: "network-only",
+  });
+  if (obj.loading) return <p>Loading ...</p>;
+  console.log(obj);
+
   const submitHandler = (event) => {
     event.preventDefault();
     const email = emailEl.current.value;
@@ -22,65 +52,22 @@ const AuthPage = (props) => {
     if (email.trim().length === 0 || password.trim().length === 0) {
       return;
     }
+    // console.log(email, password);
 
-    let requestBody = {
-      query: `
-        query Login($email: String!, $password: String!) {
-          login(email: $email, password: $password) {
-            userId
-            token
-            tokenExpiration
-          }
-        }
-      `,
-      variables: {
-        email,
-        password,
-      },
-    };
+    const { data } = obj;
 
     if (!isLogin) {
-      requestBody = {
-        query: `
-          mutation CreateUser($email: String!, $password: String!) {
-            createUser(userInput: {email: $email, password: $password}) {
-              _id
-              email
-            }
-          }
-        `,
-        variables: {
-          email,
-          password,
-        },
-      };
+      signUser({ variables: { email, password } });
     }
+    getUser({ variables: { email, password } });
 
-    fetch("http://localhost:5000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then((resData) => {
-        if (resData.data.login.token) {
-          authContext.login(
-            resData.data.login.token,
-            resData.data.login.userId,
-            resData.data.login.tokenExpiration
-          );
-        }
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    if (data && data.login.token) {
+      authContext.login(
+        data.login.token,
+        data.login.userId,
+        data.login.tokenExpiration
+      );
+    }
   };
 
   return (
