@@ -5,7 +5,8 @@ import { LOGOUT, LOGIN } from "./types";
 
 const AuthState = (props) => {
   const initialState = {
-    token: null,
+    // token: null,
+    token: localStorage.getItem("token"),
     userId: null,
   };
   const [state, dispatch] = useReducer(authReducer, initialState);

@@ -45,7 +45,7 @@ const bookingsChart = (props) => {
 
   return (
     <div style={{ textAlign: "center" }}>
-      <BarChart data={chartData} />
+      {/* <BarChart data={chartData} /> */}
     </div>
   );
 };

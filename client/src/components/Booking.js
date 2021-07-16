@@ -1,105 +1,82 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
-import AuthContext from "../context/authContext";
-// import BookingsChart from "./Bookings/BookingsChart";
+import BookingsChart from "./Bookings/BookingsChart";
 import BookingList from "../components/Bookings/BookingList";
 
+import { useLazyQuery, gql, useMutation } from "@apollo/client";
+
 const BookingsPage = () => {
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [lct, setLct] = useState("list");
-  const authContext = useContext(AuthContext);
+
+  const FETCH_BOOKINGS = gql`
+    query Bookings {
+      bookings {
+        _id
+        createdAt
+        event {
+          _id
+          title
+          date
+          price
+        }
+      }
+    }
+  `;
+
+  const DELETE_BOOKING = gql`
+    mutation CancelBooking($id: ID!) {
+      cancelBooking(bookingId: $id) {
+        _id
+        title
+      }
+    }
+  `;
+
+  const [deleteBooking] = useMutation(DELETE_BOOKING, {
+    onCompleted(data) {
+      console.log(data);
+    },
+    onError(err) {
+      console.log(err);
+      // setLoading(false);
+    },
+  });
+
+  const [getBookings, { loading, data }] = useLazyQuery(FETCH_BOOKINGS, {
+    onCompleted(data) {
+      console.log(data);
+      const { bookings } = data;
+      setBookings(bookings);
+      // setLoading(false);
+      console.log(loading);
+    },
+    onError(err) {
+      console.log(err);
+      // setLoading(false);
+    },
+  });
+  console.log(loading);
 
   useEffect(() => {
-    fetchBookings();
+    // fetchBookings();
+    getBookings();
+
     // eslint-disable-next-line
-  }, []);
+  }, [data]);
 
-  const fetchBookings = () => {
-    setLoading(true);
-    const requestBody = {
-      query: `
-          query {
-            bookings {
-              _id
-             createdAt
-             event {
-               _id
-               title
-               date
-               price
-             }
-            }
-          }
-        `,
-    };
-
-    fetch("http://localhost:5000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + authContext.token,
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then((resData) => {
-        const bookings = resData.data.bookings;
-        setBookings(bookings);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
-  };
+  // const fetchBookings = () => {
+  //   // setLoading(true);
+  // };
 
   const deleteBookingHandler = (bookingId) => {
-    setLoading(true);
-    const requestBody = {
-      query: `
-          mutation CancelBooking($id: ID!){
-            cancelBooking(bookingId: $id) {
-            _id
-             title
-            }
-          }
-        `,
+    // setLoading(true);
+    deleteBooking({
       variables: {
         id: bookingId,
       },
-    };
-
-    fetch("http://localhost:5000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + authContext.token,
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then((resData) => {
-        const updatedBookings = bookings.filter((booking) => {
-          return booking._id !== bookingId;
-        });
-        setBookings(updatedBookings);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-      });
+    });
   };
 
   const Spinner = () => {
@@ -152,9 +129,7 @@ const BookingsPage = () => {
           {lct === "list" ? (
             <BookingList bookings={bookings} onDelete={deleteBookingHandler} />
           ) : (
-            {
-              /* <BookingsChart bookings={bookings} /> */
-            }
+            <BookingsChart bookings={bookings} />
           )}
         </>
       )}

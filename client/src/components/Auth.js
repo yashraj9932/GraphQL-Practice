@@ -1,7 +1,7 @@
 import "./Auth.css";
 import { useState, useRef, useContext } from "react";
 import AuthContext from "../context/authContext";
-import { gql, useLazyQuery } from "@apollo/client";
+import { gql, useLazyQuery, useMutation } from "@apollo/client";
 
 const AuthPage = (props) => {
   const authContext = useContext(AuthContext);
@@ -34,16 +34,20 @@ const AuthPage = (props) => {
     }
   `;
 
-  // const [getUser, { loading, data }] = useLazyQuery(LOGIN);
-  const [getUser, obj] = useLazyQuery(LOGIN, {
-    fetchPolicy: "network-only",
-  });
-  const [signUser, objj] = useLazyQuery(SIGNUP, {
-    fetchPolicy: "network-only",
-  });
-  if (obj.loading) return <p>Loading ...</p>;
-  console.log(obj);
+  const [getUser, { data }] = useLazyQuery(LOGIN);
+  // const [getUser, obj] = useLazyQuery(LOGIN, {
+  //   fetchPolicy: "network-only",
+  // });
+  const [signUser, { dataS }] = useMutation(SIGNUP);
+  console.log(data);
 
+  if (data && data.login.token) {
+    authContext.login(
+      data.login.token,
+      data.login.userId,
+      data.login.tokenExpiration
+    );
+  }
   const submitHandler = (event) => {
     event.preventDefault();
     const email = emailEl.current.value;
@@ -54,19 +58,13 @@ const AuthPage = (props) => {
     }
     // console.log(email, password);
 
-    const { data } = obj;
+    // const { data } = obj;
+    console.log(data);
 
     if (!isLogin) {
       signUser({ variables: { email, password } });
-    }
-    getUser({ variables: { email, password } });
-
-    if (data && data.login.token) {
-      authContext.login(
-        data.login.token,
-        data.login.userId,
-        data.login.tokenExpiration
-      );
+    } else {
+      getUser({ variables: { email, password } });
     }
   };
 
