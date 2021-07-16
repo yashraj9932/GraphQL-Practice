@@ -1,4 +1,4 @@
-import { Bar as BarChart } from "react-chartjs";
+import { Bar } from "react-chartjs-2";
 
 const BOOKINGS_BUCKETS = {
   Cheap: {
@@ -20,6 +20,8 @@ const bookingsChart = (props) => {
   let values = [];
   for (const bucket in BOOKINGS_BUCKETS) {
     const filteredBookingsCount = props.bookings.reduce((prev, current) => {
+      console.log(current);
+
       if (
         current.event.price > BOOKINGS_BUCKETS[bucket].min &&
         current.event.price < BOOKINGS_BUCKETS[bucket].max
@@ -45,7 +47,7 @@ const bookingsChart = (props) => {
 
   return (
     <div style={{ textAlign: "center" }}>
-      {/* <BarChart data={chartData} /> */}
+      <Bar data={chartData} />
     </div>
   );
 };

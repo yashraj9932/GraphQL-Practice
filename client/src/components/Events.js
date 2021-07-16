@@ -4,11 +4,12 @@ import Backdrop from "../components/Backdrop/Backdrop";
 import AuthContext from "../context/authContext";
 import "./Events.css";
 import EventList from "../components/Events/EventList/EventList";
+import { gql, useLazyQuery, useMutation } from "@apollo/client";
 
 const EventsPage = () => {
   const [creating, setCreating] = useState(false);
   const [events, setEvents] = useState([]);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
   const authContext = useContext(AuthContext);
 
@@ -28,7 +29,54 @@ const EventsPage = () => {
 
   useEffect(() => {
     fetchEvents();
+    // eslint-disable-next-line
   }, []);
+
+  const CREATE_EVENT = gql`
+    mutation CreateEvent(
+      $title: String!
+      $description: String!
+      $price: Float!
+      $date: String!
+    ) {
+      createEvent(
+        eventInput: {
+          title: $title
+          description: $description
+          price: $price
+          date: $date
+        }
+      ) {
+        _id
+        title
+        description
+        date
+        price
+        creator {
+          _id
+          email
+        }
+      }
+    }
+  `;
+
+  const [createEvent] = useMutation(CREATE_EVENT, {
+    onCompleted(data) {
+      const updatedEvents = [...events];
+      updatedEvents.push({
+        _id: data.createEvent._id,
+        title: data.createEvent.title,
+        description: data.createEvent.description,
+        date: data.createEvent.date,
+        price: data.createEvent.price,
+        creator: {
+          _id: authContext.userId,
+        },
+      });
+      // fetchEvents();
+      setEvents(updatedEvents);
+    },
+  });
 
   const modalConfirmHandler = () => {
     setCreating(false);
@@ -46,112 +94,48 @@ const EventsPage = () => {
       return;
     }
 
-    // const event = { title, price, date, description };
-    // console.log(event);
-
-    const requestBody = {
-      query: `
-          mutation CreateEvent($title:String!, $description:String!, $price:Float!, $date:String! ) {
-            createEvent(eventInput: {title: $title, description: $description, price: $price, date: $date}) {
-              _id
-              title
-              description
-              date
-              price
-              creator {
-                _id
-                email
-              }
-            }
-          }
-        `,
+    createEvent({
       variables: {
         title,
         description,
         price,
         date,
       },
-    };
-
-    const token = authContext.token;
-
-    fetch("http://localhost:5000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then((resData) => {
-        const updatedEvents = [...events];
-        updatedEvents.push({
-          _id: resData.data.createEvent._id,
-          title: resData.data.createEvent.title,
-          description: resData.data.createEvent.description,
-          date: resData.data.createEvent.date,
-          price: resData.data.createEvent.price,
-          creator: {
-            _id: authContext.userId,
-          },
-        });
-        // fetchEvents();
-        setEvents(updatedEvents);
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    });
   };
 
-  const fetchEvents = () => {
-    setLoading(true);
-    const requestBody = {
-      query: `
-          query {
-            events {
-              _id
-              title
-              description
-              date
-              price
-              creator {
-                _id
-                email
-              }
-            }
-          }
-        `,
-    };
-
-    fetch("http://localhost:5000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
+  const GET_EVENTS = gql`
+    query Events {
+      events {
+        _id
+        title
+        description
+        date
+        price
+        creator {
+          _id
+          email
         }
-        return res.json();
-      })
-      .then((resData) => {
-        const eventss = resData.data.events;
-        setEvents(eventss);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.log(err);
-        setLoading(false);
-        throw err;
-      });
+      }
+    }
+  `;
+
+  const [getEvents, { loading }] = useLazyQuery(GET_EVENTS, {
+    onCompleted(data) {
+      const { events } = data;
+      setEvents(events);
+      // setLoading(false);
+      console.log(loading);
+    },
+    onError(err) {
+      console.log(err);
+      // setLoading(false);
+    },
+  });
+
+  const fetchEvents = () => {
+    // setLoading(true);
+    getEvents();
   };
 
   const showDetailHandler = (eventId) => {
@@ -159,47 +143,37 @@ const EventsPage = () => {
     setSelected(selectedEvent);
   };
 
+  const BOOK_EVENT = gql`
+    mutation BookEvent($id: ID!) {
+      bookEvent(eventId: $id) {
+        _id
+        createdAt
+        updatedAt
+      }
+    }
+  `;
+
+  const [bookEvent] = useMutation(BOOK_EVENT, {
+    onCompleted(data) {
+      setSelected(null);
+    },
+    onError(err) {
+      console.log(err);
+      // setLoading(false);
+    },
+  });
+
   const bookEventHandler = () => {
     if (!authContext.token) {
       setSelected(null);
       return;
     }
-    const requestBody = {
-      query: `
-          mutation BookEvent($id: ID!) {
-            bookEvent(eventId:$id) {
-              _id
-              createdAt
-              updatedAt
-            }
-          }
-        `,
+
+    bookEvent({
       variables: {
         id: selected._id,
       },
-    };
-
-    fetch("http://localhost:5000/graphql", {
-      method: "POST",
-      body: JSON.stringify(requestBody),
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: "Bearer " + authContext.token,
-      },
-    })
-      .then((res) => {
-        if (res.status !== 200 && res.status !== 201) {
-          throw new Error("Failed!");
-        }
-        return res.json();
-      })
-      .then((resData) => {
-        setSelected(null);
-      })
-      .catch((err) => {
-        console.log(err);
-        throw err;
-      });
+    });
   };
   return (
     <React.Fragment>

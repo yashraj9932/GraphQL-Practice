@@ -6,7 +6,6 @@ import BookingList from "../components/Bookings/BookingList";
 import { useLazyQuery, gql, useMutation } from "@apollo/client";
 
 const BookingsPage = () => {
-  // const [loading, setLoading] = useState(false);
   const [bookings, setBookings] = useState([]);
   const [lct, setLct] = useState("list");
 
@@ -34,30 +33,36 @@ const BookingsPage = () => {
     }
   `;
 
+  const updateBoo = (bookingId) => {
+    const updatedBookings = bookings.filter((booking) => {
+      return booking._id !== bookingId;
+    });
+    setBookings(updatedBookings);
+  };
+
   const [deleteBooking] = useMutation(DELETE_BOOKING, {
     onCompleted(data) {
-      console.log(data);
+      console.log(data.cancelBooking._id);
+      updateBoo(data.cancelBooking._id);
     },
     onError(err) {
       console.log(err);
-      // setLoading(false);
     },
   });
 
   const [getBookings, { loading, data }] = useLazyQuery(FETCH_BOOKINGS, {
     onCompleted(data) {
-      console.log(data);
       const { bookings } = data;
       setBookings(bookings);
       // setLoading(false);
-      console.log(loading);
+      // console.log(bookings, loading);
     },
     onError(err) {
       console.log(err);
       // setLoading(false);
     },
   });
-  console.log(loading);
+  // console.log(loading);
 
   useEffect(() => {
     // fetchBookings();

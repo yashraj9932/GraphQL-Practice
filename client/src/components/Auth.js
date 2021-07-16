@@ -34,20 +34,34 @@ const AuthPage = (props) => {
     }
   `;
 
-  const [getUser, { data }] = useLazyQuery(LOGIN);
-  // const [getUser, obj] = useLazyQuery(LOGIN, {
-  //   fetchPolicy: "network-only",
-  // });
-  const [signUser, { dataS }] = useMutation(SIGNUP);
-  console.log(data);
+  const [getUser] = useLazyQuery(LOGIN, {
+    onCompleted(data) {
+      authContext.login(
+        data.login.token,
+        data.login.userId,
+        data.login.tokenExpiration
+      );
+    },
+    onError(err) {
+      console.log(err);
+      throw err;
+    },
+  });
+  const [signUser] = useMutation(SIGNUP, {
+    onCompleted(data) {
+      getUser({
+        variables: {
+          email: data.createUser.email,
+          password: passwordEl.current.value,
+        },
+      });
+    },
+    onError(err) {
+      console.log(err);
+      throw err;
+    },
+  });
 
-  if (data && data.login.token) {
-    authContext.login(
-      data.login.token,
-      data.login.userId,
-      data.login.tokenExpiration
-    );
-  }
   const submitHandler = (event) => {
     event.preventDefault();
     const email = emailEl.current.value;
@@ -56,10 +70,6 @@ const AuthPage = (props) => {
     if (email.trim().length === 0 || password.trim().length === 0) {
       return;
     }
-    // console.log(email, password);
-
-    // const { data } = obj;
-    console.log(data);
 
     if (!isLogin) {
       signUser({ variables: { email, password } });
