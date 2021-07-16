@@ -11,18 +11,6 @@ const AuthState = (props) => {
   };
   const [state, dispatch] = useReducer(authReducer, initialState);
 
-  //   const setToken = (token) => {
-  //     dispatch({
-  //       type: SETTOKEN,
-  //       payload: token,
-  //     });
-  //   };
-  //   const setuserId = (userId) => {
-  //     dispatch({
-  //       type: SETUSER,
-  //       payload: userId,
-  //     });
-  //   };
   const login = (token, userId, tokenExpiration) => {
     // console.log(token, userId);
     dispatch({

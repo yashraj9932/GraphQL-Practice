@@ -1,15 +1,14 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef, useContext } from "react";
 import Modal from "../components/Modal/Modal";
 import Backdrop from "../components/Backdrop/Backdrop";
 import AuthContext from "../context/authContext";
 import "./Events.css";
 import EventList from "../components/Events/EventList/EventList";
-import { gql, useLazyQuery, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 const EventsPage = () => {
   const [creating, setCreating] = useState(false);
   const [events, setEvents] = useState([]);
-  // const [loading, setLoading] = useState(false);
   const [selected, setSelected] = useState(null);
   const authContext = useContext(AuthContext);
 
@@ -26,11 +25,6 @@ const EventsPage = () => {
   const priceElRef = useRef();
   const dateElRef = useRef();
   const descriptionElRef = useRef();
-
-  useEffect(() => {
-    fetchEvents();
-    // eslint-disable-next-line
-  }, []);
 
   const CREATE_EVENT = gql`
     mutation CreateEvent(
@@ -120,23 +114,19 @@ const EventsPage = () => {
     }
   `;
 
-  const [getEvents, { loading }] = useLazyQuery(GET_EVENTS, {
+  const { loading, fetchMore } = useQuery(GET_EVENTS, {
+    variables: {
+      offset: 0,
+      limit: 2,
+    },
     onCompleted(data) {
       const { events } = data;
       setEvents(events);
-      // setLoading(false);
-      console.log(loading);
     },
     onError(err) {
       console.log(err);
-      // setLoading(false);
     },
   });
-
-  const fetchEvents = () => {
-    // setLoading(true);
-    getEvents();
-  };
 
   const showDetailHandler = (eventId) => {
     const selectedEvent = events.find((e) => e._id === eventId);
@@ -159,7 +149,6 @@ const EventsPage = () => {
     },
     onError(err) {
       console.log(err);
-      // setLoading(false);
     },
   });
 

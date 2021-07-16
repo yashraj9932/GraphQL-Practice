@@ -1,9 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import BookingsChart from "./Bookings/BookingsChart";
 import BookingList from "../components/Bookings/BookingList";
 
-import { useLazyQuery, gql, useMutation } from "@apollo/client";
+import { gql, useMutation, useQuery } from "@apollo/client";
 
 const BookingsPage = () => {
   const [bookings, setBookings] = useState([]);
@@ -28,7 +28,6 @@ const BookingsPage = () => {
     mutation CancelBooking($id: ID!) {
       cancelBooking(bookingId: $id) {
         _id
-        title
       }
     }
   `;
@@ -42,7 +41,7 @@ const BookingsPage = () => {
 
   const [deleteBooking] = useMutation(DELETE_BOOKING, {
     onCompleted(data) {
-      console.log(data.cancelBooking._id);
+      // console.log(data);
       updateBoo(data.cancelBooking._id);
     },
     onError(err) {
@@ -50,33 +49,23 @@ const BookingsPage = () => {
     },
   });
 
-  const [getBookings, { loading, data }] = useLazyQuery(FETCH_BOOKINGS, {
+  const { loading } = useQuery(FETCH_BOOKINGS, {
     onCompleted(data) {
       const { bookings } = data;
       setBookings(bookings);
-      // setLoading(false);
-      // console.log(bookings, loading);
     },
     onError(err) {
       console.log(err);
-      // setLoading(false);
     },
+    // pollInterval: 15000,
+    // notifyOnNetworkStatusChange: true,
   });
-  // console.log(loading);
 
-  useEffect(() => {
-    // fetchBookings();
-    getBookings();
-
-    // eslint-disable-next-line
-  }, [data]);
-
-  // const fetchBookings = () => {
-  //   // setLoading(true);
-  // };
+  // useEffect(() => {
+  //   console.log(refetch);
+  // }, []);
 
   const deleteBookingHandler = (bookingId) => {
-    // setLoading(true);
     deleteBooking({
       variables: {
         id: bookingId,
