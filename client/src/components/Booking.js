@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 import BookingsChart from "./Bookings/BookingsChart";
 import BookingList from "../components/Bookings/BookingList";

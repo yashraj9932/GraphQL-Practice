@@ -67,7 +67,6 @@ const EventsPage = () => {
           _id: authContext.userId,
         },
       });
-      // fetchEvents();
       setEvents(updatedEvents);
     },
   });
@@ -114,7 +113,7 @@ const EventsPage = () => {
     }
   `;
 
-  const { loading, fetchMore } = useQuery(GET_EVENTS, {
+  const { loading } = useQuery(GET_EVENTS, {
     variables: {
       offset: 0,
       limit: 2,

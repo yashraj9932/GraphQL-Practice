@@ -9,6 +9,8 @@
   "author": "Yash Raj Goel",
   "license": "ISC",
   "dependencies": {
+    "@graphql-tools/schema": "^7.1.5",
+    "apollo-server-express": "^2.24.0",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dataloader": "^2.0.0",
@@ -16,6 +18,7 @@
     "express": "^4.17.1",
     "express-graphql": "^0.12.0",
     "graphql": "^15.5.1",
+    "graphql-tools": "^4.0.8",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.2",
     "react-router-dom": "^5.2.0"
