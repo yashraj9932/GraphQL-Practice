@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "@graphql-tools/schema": "^7.1.5",
-    "apollo-server-express": "^2.24.0",
+    "apollo-server-express": "^3.0.1",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "dataloader": "^2.0.0",
@@ -21,7 +21,8 @@
     "graphql-tools": "^4.0.8",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.13.2",
-    "react-router-dom": "^5.2.0"
+    "react-router-dom": "^5.2.0",
+    "subscriptions-transport-ws": "^0.9.19"
   },
   "devDependencies": {
     "nodemon": "^2.0.10"

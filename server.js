@@ -18,39 +18,53 @@ app.use(auth);
 
 app.use(express.json());
 
-// async function startApolloServer(schema) {
-const server = new ApolloServer({
-  schema,
-  playground: true,
-  context: ({ req }) => {
-    let { userId, isAuth } = req;
+//For subscriptions
+// const { SubscriptionServer } = require("subscriptions-transport-ws");
+// const { execute, subscribe } = require("graphql");
+// const httpServer = http.createServer(app);
 
-    return {
-      req,
-      userId,
-      isAuth,
-    };
-  },
-});
+// (async function () {
+//   const server = new ApolloServer({
+//     schema,
+//   });
+//   await server.start();
+//   server.applyMiddleware({ app });
 
-// await server.start();
+//   SubscriptionServer.create(
+//     { schema, execute, subscribe },
+//     { server: httpServer, path: server.graphqlPath }
+//   );
 
-//Applying middlewares like body parser and cors
-server.applyMiddleware({
-  app,
-  path: "/graphql",
-});
+//   const PORT = 5000;
+//   httpServer.listen(PORT, () =>
+//     console.log(`Server is now running on http://localhost:${PORT}/graphql`)
+//   );
+// })();
 
-const PORT = process.env.PORT || 5000;
+//Original
+// async function startApolloServer() {
+//   const server = new ApolloServer({
+//     schema,
+//     playground: true,
+//     context: ({ req }) => {
+//       let { userId, isAuth } = req;
 
-const httpServer = http.createServer(app);
-// server.installSubscriptionHandlers(httpServer);
+//       return {
+//         req,
+//         userId,
+//         isAuth,
+//       };
+//     },
+//   });
+//   await server.start();
+//   server.applyMiddleware({
+//     app,
+//     path: "/graphql",
+//   });
 
-// console.log(server);
-
-httpServer.listen(PORT, () => {
-  console.log(`Apollo server listening at http://localhost:5000`);
-});
+//   // Modified server startup
+//   await new Promise((resolve) => app.listen({ port: 5000 }, resolve));
+//   console.log(`🚀 Server ready at http://localhost:5000${server.graphqlPath}`);
 // }
 
-// startApolloServer(schema);
+// startApolloServer();
